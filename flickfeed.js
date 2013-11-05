@@ -3,8 +3,14 @@
 		if (this === w) {
 			return new arguments.callee(options);
 		}
+		this.options = options || {};
+		this.settings = {};
+		for (var i in this.defaults) {
+			this.settings[i] = this.options[i] || this.defaults[i];
+		}
 		this.images = [];
 		this.imageData = [];
+		this.setElement();
 		this.run();
 	}
 
@@ -17,6 +23,11 @@
 			}
 		}.bind(this);
 		x.send();
+	};
+
+	Flickfeed.prototype.setElement = function() {
+		var target = this.options.target || "#Flickfeed";
+		this.element = d.querySelector(target);
 	};
 
 	Flickfeed.prototype.parse = function(data) {
@@ -33,14 +44,14 @@
 		this.output();
 	};
 
-	Flickfeed.prototype.output = function(){
-		var div = document.createElement('div');
-		this.images.forEach(function(image){
+	Flickfeed.prototype.output = function() {
+		this.images.forEach(function(image) {
 			var img = new Image();
 			img.src = image;
-			div.appendChild(img);
-		});
-		d.body.appendChild(div);
+			img.className = 'Flickfeed-image';
+			this.element.appendChild(img);
+		}.bind(this));
+		d.body.appendChild(this.element);
 	};
 
 	Flickfeed.prototype.ApiConfig = {
@@ -52,8 +63,12 @@
 		extras: ["nojsoncallback=1"]
 	};
 
+	Flickfeed.prototype.defaults = {
+		limit: 10
+	};
+
 	Flickfeed.prototype.buildURL = function() {
-		var url = this.ApiConfig.root + "method=" + this.ApiConfig.method + "&api_key=" + this.ApiConfig.ApiKey + "&user_id=" + this.ApiConfig.UserId + "&format=" + this.ApiConfig.format + '&' + this.ApiConfig.extras.join('&');
+		var url = this.ApiConfig.root + "method=" + this.ApiConfig.method + "&api_key=" + this.ApiConfig.ApiKey + "&user_id=" + this.ApiConfig.UserId + "&format=" + this.ApiConfig.format + '&per_page=' + this.settings.limit + '&' + this.ApiConfig.extras.join('&');
 		return url;
 	};
 
