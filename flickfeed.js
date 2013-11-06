@@ -14,6 +14,7 @@
 		}
 		this.images = [];
 		this.imageData = [];
+		this.success = options.success || null;
 		this.setElement();
 		if (!this.element) {
 			throw new Error("Can\'t find a valid element");
@@ -58,7 +59,11 @@
 		for (var i = this.imageData.length - 1; i >= 0; i--) {
 			this.images.push(this.buildImageUrl(this.imageData[i]));
 		}
-		this.output();
+		if (this.success && typeof this.success === 'function') {
+			this.success(this.images);
+		} else {
+			this.output();
+		}
 	};
 
 	Flickfeed.prototype.output = function() {
