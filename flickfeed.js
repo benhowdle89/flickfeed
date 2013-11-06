@@ -1,7 +1,7 @@
 (function(w, d) {
 	function Flickfeed(options) {
 		if (this === w) {
-			return new arguments.callee(options);
+			return new Flickfeed(options);
 		}
 		this.options = options || {};
 		this.settings = {};
@@ -9,9 +9,15 @@
 			this.settings[i] = this.options[i] || this.defaults[i];
 		}
 		this.settings.userId = this.options.userId;
+		if (!this.settings.userId) {
+			throw new Error("A valid user ID needs to be passed in");
+		}
 		this.images = [];
 		this.imageData = [];
 		this.setElement();
+		if (!this.element) {
+			throw new Error("Can\'t find a valid element");
+		}
 		this.run();
 	}
 
@@ -20,7 +26,11 @@
 		x.open("GET", this.buildURL(), true);
 		x.onreadystatechange = function() {
 			if (x.readyState == 4) {
-				this.parse(JSON.parse(x.responseText));
+				if (x.responseText) {
+					this.parse(JSON.parse(x.responseText));
+				} else {
+					throw new Error("An unknown error occurred");
+				}
 			}
 		}.bind(this);
 		x.send();
@@ -35,27 +45,35 @@
 		if (data.photos) {
 			this.imageData = data.photos.photo;
 			this.processImages();
+		} else {
+			if (data.code) {
+				throw new Error(data.message);
+			} else {
+				throw new Error("An unknown error occurred");
+			}
 		}
 	};
 
 	Flickfeed.prototype.processImages = function() {
-		this.imageData.forEach(function(img) {
-			this.images.push(this.buildImageUrl(img));
-		}.bind(this));
+		for (var i = this.imageData.length - 1; i >= 0; i--) {
+			this.images.push(this.buildImageUrl(this.imageData[i]));
+		}
 		this.output();
 	};
 
 	Flickfeed.prototype.output = function() {
-		this.images.forEach(function(image) {
+		var fragment = d.createDocumentFragment();
+		for (var i = this.images.length - 1; i >= 0; i--) {
 			var img = new Image();
-			img.src = image;
+			img.src = this.images[i];
 			img.className = 'Flickfeed-image';
-			this.element.appendChild(img);
-		}.bind(this));
+			fragment.appendChild(img);
+		}
+		this.element.appendChild(fragment);
 	};
 
 	Flickfeed.prototype.ApiConfig = {
-		root: "http://api.flickr.com/services/rest/?",
+		root: "http://api.flickr.com/services/rest/",
 		method: "flickr.photos.search",
 		ApiKey: "bf1842074c9c69fbc9d2a080569ae2ff",
 		format: "json",
@@ -63,16 +81,18 @@
 	};
 
 	Flickfeed.prototype.defaults = {
-		limit: 10
+		limit: 10,
+		size: "m",
+		sort: "date-posted-desc"
 	};
 
 	Flickfeed.prototype.buildURL = function() {
-		var url = this.ApiConfig.root + "method=" + this.ApiConfig.method + "&api_key=" + this.ApiConfig.ApiKey + "&user_id=" + this.settings.userId + "&format=" + this.ApiConfig.format + '&per_page=' + this.settings.limit + '&' + this.ApiConfig.extras.join('&');
+		var url = this.ApiConfig.root + "?method=" + this.ApiConfig.method + "&api_key=" + this.ApiConfig.ApiKey + "&user_id=" + this.settings.userId + "&format=" + this.ApiConfig.format + '&sort=' + this.settings.sort + '&per_page=' + this.settings.limit + '&' + this.ApiConfig.extras.join('&');
 		return url;
 	};
 
 	Flickfeed.prototype.buildImageUrl = function(image) {
-		var url = "http://farm" + image.farm + ".staticflickr.com/" + image.server + "/" + image.id + "_" + image.secret + "_z.jpg";
+		var url = "http://farm" + image.farm + ".staticflickr.com/" + image.server + "/" + image.id + "_" + image.secret + "_" + this.settings.size + ".jpg";
 		return url;
 	};
 
