@@ -52,7 +52,6 @@
 			img.className = 'Flickfeed-image';
 			this.element.appendChild(img);
 		}.bind(this));
-		d.body.appendChild(this.element);
 	};
 
 	Flickfeed.prototype.ApiConfig = {
