@@ -15,6 +15,7 @@
 		this.images = [];
 		this.imageData = [];
 		this.success = options.success || null;
+		this.template = options.template || null;
 		this.setElement();
 		if (!this.element) {
 			throw new Error("Can\'t find a valid element");
@@ -67,14 +68,26 @@
 	};
 
 	Flickfeed.prototype.output = function() {
-		var fragment = d.createDocumentFragment();
-		for (var i = this.images.length - 1; i >= 0; i--) {
-			var img = new Image();
-			img.src = this.images[i];
-			img.className = 'Flickfeed-image';
-			fragment.appendChild(img);
+		if (this.template && typeof this.template === 'string') {
+			this.element.innerHTML = this.compileTemplate();
+		} else {
+			var fragment = d.createDocumentFragment();
+			for (var i = this.images.length - 1; i >= 0; i--) {
+				var img = new Image();
+				img.src = this.images[i];
+				img.className = 'Flickfeed-image';
+				fragment.appendChild(img);
+			}
+			this.element.appendChild(fragment);
 		}
-		this.element.appendChild(fragment);
+	};
+
+	Flickfeed.prototype.compileTemplate = function() {
+		var html = '';
+		for (var i = this.images.length - 1; i >= 0; i--) {
+			html += this.template.replace(/{{image}}/g, this.images[i]);
+		}
+		return html;
 	};
 
 	Flickfeed.prototype.ApiConfig = {
