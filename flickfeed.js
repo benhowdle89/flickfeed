@@ -8,6 +8,7 @@
 		for (var i in this.defaults) {
 			this.settings[i] = this.options[i] || this.defaults[i];
 		}
+		this.settings.userId = this.options.userId;
 		this.images = [];
 		this.imageData = [];
 		this.setElement();
@@ -58,7 +59,6 @@
 		root: "http://api.flickr.com/services/rest/?",
 		method: "flickr.photos.search",
 		ApiKey: "bf1842074c9c69fbc9d2a080569ae2ff",
-		UserId: "59597329%40N08",
 		format: "json",
 		extras: ["nojsoncallback=1"]
 	};
@@ -68,7 +68,7 @@
 	};
 
 	Flickfeed.prototype.buildURL = function() {
-		var url = this.ApiConfig.root + "method=" + this.ApiConfig.method + "&api_key=" + this.ApiConfig.ApiKey + "&user_id=" + this.ApiConfig.UserId + "&format=" + this.ApiConfig.format + '&per_page=' + this.settings.limit + '&' + this.ApiConfig.extras.join('&');
+		var url = this.ApiConfig.root + "method=" + this.ApiConfig.method + "&api_key=" + this.ApiConfig.ApiKey + "&user_id=" + this.settings.userId + "&format=" + this.ApiConfig.format + '&per_page=' + this.settings.limit + '&' + this.ApiConfig.extras.join('&');
 		return url;
 	};
 
