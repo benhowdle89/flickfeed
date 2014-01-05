@@ -14,8 +14,9 @@
 		}
 		this.images = [];
 		this.imageData = [];
-		this.success = options.success || null;
-		this.template = options.template || null;
+		this.success = this.options.success || null;
+		this.complete = this.options.complete || null;
+		this.template = this.options.template || null;
 		this.setElement();
 		if (!this.element) {
 			throw new Error("Can\'t find a valid element");
@@ -68,8 +69,15 @@
 	};
 
 	Flickfeed.prototype.output = function() {
+		var finished = function() {
+			if (this.complete && typeof this.complete === 'function') {
+				this.complete();
+			}
+		}.bind(this);
+
 		if (this.template && typeof this.template === 'string') {
 			this.element.innerHTML = this.compileTemplate();
+			finished();
 		} else {
 			var fragment = d.createDocumentFragment();
 			for (var i = this.images.length - 1; i >= 0; i--) {
@@ -79,6 +87,7 @@
 				fragment.appendChild(img);
 			}
 			this.element.appendChild(fragment);
+			finished();
 		}
 	};
 
