@@ -8,9 +8,10 @@
 		for (var i in this.defaults) {
 			this.settings[i] = this.options[i] || this.defaults[i];
 		}
-		this.settings.userId = this.options.userId;
-		if (!this.settings.userId) {
-			throw new Error("A valid user ID needs to be passed in");
+		this.settings.userId = this.options.userId || null;
+		this.settings.groupId = this.options.group_id || null;
+		if (!this.settings.userId && !this.settings.groupId) {
+			throw new Error("One valid ID needs to be passed in");
 		}
 		this.images = [];
 		this.imageData = [];
@@ -114,7 +115,7 @@
 	};
 
 	Flickfeed.prototype.buildURL = function() {
-		var url = this.ApiConfig.root + "?method=" + this.ApiConfig.method + "&api_key=" + this.ApiConfig.ApiKey + "&user_id=" + this.settings.userId + "&format=" + this.ApiConfig.format + '&sort=' + this.settings.sort + '&per_page=' + this.settings.limit + '&' + this.ApiConfig.extras.join('&');
+		var url = this.ApiConfig.root + "?method=" + this.ApiConfig.method + "&api_key=" + this.ApiConfig.ApiKey + ((this.settings.userId) ? "&user_id=" + this.settings.userId : "&group_id=" + this.settings.groupId) + "&format=" + this.ApiConfig.format + '&sort=' + this.settings.sort + '&per_page=' + this.settings.limit + '&' + this.ApiConfig.extras.join('&');
 		return url;
 	};
 
